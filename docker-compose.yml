@@ -1,0 +1,155 @@
+version: '3'
+
+services:
+  profile_api:
+    container_name: profile_api
+    build:
+      context: ./profile/api-gateway
+    volumes:
+      - ./profile/api-gateway:/www/profile_api
+      - /www/profile_api/node_modules
+    ports:
+      - 5000:5000
+    command: npm run start:dev
+    env_file:
+      - ./profile/api-gateway/.env
+    environment:
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+    links:
+      - rabbitmq   
+    depends_on: 
+      - rabbitmq
+    networks: 
+      - backend  
+
+  profile_ms:
+    container_name: profile_ms
+    build:
+      context: ./profile/app-microservices
+    volumes:
+      - ./profile/app-microservices:/www/profile_ms
+      - /www/profile_ms/node_modules
+    command: npm run start:dev
+    env_file:
+      - ./profile/app-microservices/.env
+    environment:
+      - POSTGRES_HOST=${POSTGRES_HOST_PROFILE}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - DATABASE_URL=${DATABASE_URL_PROFILE}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+    links:
+      - rabbitmq  
+    depends_on:
+      - profile_db
+      - rabbitmq
+    networks: 
+      - backend  
+
+  auth_api:
+    container_name: auth_api
+    build:
+      context: ./auth/api-gateway
+    volumes:
+      - ./auth/api-gateway:/www/auth_api
+      - /www/auth_api/node_modules
+    ports:
+      - 3000:3000
+    command: npm run start:dev
+    env_file:
+      - ./auth/api-gateway/.env
+    environment:
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+    links:
+      - rabbitmq   
+    depends_on: 
+      - rabbitmq
+    networks: 
+      - backend  
+
+  auth_ms:
+    container_name: auth_ms
+    build:
+      context: ./auth/app-microservices
+    volumes:
+      - ./auth/app-microservices:/www/auth_ms
+      - /www/auth_ms/node_modules
+    command: npm run start:dev
+    env_file:
+      - ./auth/app-microservices/.env
+    environment:
+      - POSTGRES_HOST=${POSTGRES_HOST_AUTH}
+      - DATABASE_URL=${DATABASE_URL_AUTH}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+    links:
+      - rabbitmq  
+    depends_on:
+      - auth_db  
+      - rabbitmq  
+    networks: 
+      - backend   
+
+  profile_db:
+    container_name: profile_db
+    image: postgres:12-alpine
+    hostname: profile_db
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB_PROFILE}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+    ports:
+      - 5431:5432
+    volumes:
+      - ./pg_data_profile:/var/lib/postgresql/data
+    networks: 
+      - backend  
+
+  auth_db:
+    container_name: auth_db
+    image: postgres:12-alpine
+    hostname: auth_db
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB_AUTH}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+    ports:
+      - 5432:5432
+    volumes:
+      - ./pg_data_auth:/var/lib/postgresql/data 
+    networks: 
+      - backend       
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.11-management
+    hostname: rabbitmq
+    volumes:
+      - ./rabbit_data:/var/lib/rabbitmq 
+    ports:
+      - 5672:5672
+      - 15671:15672
+    networks: 
+      - backend
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    hostname: pgadmin 
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL} 
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - ./pgadmin_dаta:/var/lib/pgadmin  
+    ports:
+      - 5050:80
+
+volumes:
+  pg_data_auth:
+  pg_data_profile:
+  rabbit_data:
+
+networks: 
+  backend: 
+  
