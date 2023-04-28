@@ -1,18 +1,19 @@
 version: '3'
 
 services:
-  profile_api:
-    container_name: profile_api
+
+  api-gateway:
+    container_name: api-gateway
     build:
-      context: ./profile/api-gateway
+      context: ./api-gateway
     volumes:
-      - ./profile/api-gateway:/www/profile_api
-      - /www/profile_api/node_modules
+      - ./api-gateway:/www/api-gateway
+      - /www/api-gateway/node_modules
     ports:
-      - 5000:5000
+      - 3000:3000
     command: npm run start:dev
     env_file:
-      - ./profile/api-gateway/.env
+      - ./api-gateway/.env
     environment:
       - RABBITMQ_HOST=${RABBITMQ_HOST}   
     depends_on: 
@@ -36,23 +37,6 @@ services:
       - POSTGRES_USER=${POSTGRES_USER} 
     depends_on:
       - profile_db
-      - rabbitmq  
-
-  auth_api:
-    container_name: auth_api
-    build:
-      context: ./auth/api-gateway
-    volumes:
-      - ./auth/api-gateway:/www/auth_api
-      - /www/auth_api/node_modules
-    ports:
-      - 3000:3000
-    command: npm run start:dev
-    env_file:
-      - ./auth/api-gateway/.env
-    environment:
-      - RABBITMQ_HOST=${RABBITMQ_HOST}   
-    depends_on: 
       - rabbitmq  
 
   auth_ms:

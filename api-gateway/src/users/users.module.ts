@@ -1,15 +1,21 @@
-import { Module } from '@nestjs/common';
-import { RolesController } from './roles.controller';
+import { forwardRef, Module } from '@nestjs/common';
 import { AuthModule } from 'src/auth/auth.module';
+import { RolesModule } from 'src/roles/roles.module';
+import { UsersController } from './users.controller';
+import { ProfilesModule } from 'src/profiles/profiles.module';
+
+
 
 @Module({
+  controllers: [UsersController],
   providers: [],
-  controllers: [RolesController],
 
   //список импортированных модулей, которые экспортируют провайдеров, требующихся в этом модуле
-  imports: [AuthModule],
+  imports: [
+    ProfilesModule
+  ],
 
   //подмножество providers этого модуля, которое должно быть доступно в других модулях, импортирующих этот модуль
   exports: []
 })
-export class RolesModule {}
+export class UsersModule {}

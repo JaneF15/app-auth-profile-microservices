@@ -3,6 +3,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { AuthController } from './auth.controller';
+import { ProfilesModule } from 'src/profiles/profiles.module';
 
 @Module({
   controllers: [AuthController],
@@ -18,20 +19,21 @@ import { AuthController } from './auth.controller';
         expiresIn: '24h'
       }
     }),
-    ClientsModule.register([
-      {
-        name: 'AUTH_SERVICE',
-        transport: Transport.RMQ,
-        options: {
-          urls: [`amqp://${process.env.RABBITMQ_HOST}`],
-          queue: process.env.RABBITMQ_QUEUE_NAME,
-          queueOptions: {
-            durable: true,
-          },
-        }
-      }
-    ])
+    ProfilesModule
+    // ClientsModule.register([
+    //   {
+    //     name: 'AUTH_SERVICE',
+    //     transport: Transport.RMQ,
+    //     options: {
+    //       urls: [`amqp://${process.env.RABBITMQ_HOST}`],
+    //       queue: 'auth-q',
+    //       queueOptions: {
+    //         durable: true,
+    //       },
+    //     }
+    //   }
+    // ])
   ],
-  exports: [ClientsModule, JwtModule, AuthModule]
+  exports: [JwtModule, AuthModule]
 })
 export class AuthModule {}

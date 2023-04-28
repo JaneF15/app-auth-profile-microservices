@@ -3,6 +3,7 @@ import { ProfilesController } from './profiles.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
+import { profile } from 'console';
 
 @Module({
   controllers: [ProfilesController],
@@ -24,7 +25,7 @@ import { ConfigModule } from '@nestjs/config';
         transport: Transport.RMQ,
         options: {
           urls: [`amqp://${process.env.RABBITMQ_HOST}`],
-          queue: process.env.RABBITMQ_QUEUE_NAME,
+          queue: 'profile-q',
           queueOptions: {
             durable: true,
           },
@@ -43,6 +44,6 @@ import { ConfigModule } from '@nestjs/config';
       }
     ])
   ],
-  exports: [ClientsModule, JwtModule]
+  exports: [ClientsModule, JwtModule, ProfilesModule]
 })
 export class ProfilesModule {}
